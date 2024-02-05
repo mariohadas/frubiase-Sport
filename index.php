@@ -1,4 +1,4 @@
-<?php
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,8 +9,12 @@
     <title>Document</title>
 </head>
 <body>
+
+<?php
+    echo "sebastian der huso";
+?>
     tstst
 </body>
 </html>
 
-echo sebastian der huso;
+
