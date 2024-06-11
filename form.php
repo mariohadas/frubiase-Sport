@@ -1,4 +1,13 @@
 <?php
+
+// Fehler-Reporting aktivieren
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Output-Buffering starten
+ob_start();
+
 // Datenbankverbindung herstellen
 $servername = "db5015939564.hosting-data.io";
 $username = "dbu1674238"; // Benutzername der Datenbank
@@ -78,4 +87,7 @@ try {
     echo "Fehler: " . $e->getMessage();
 }
 $conn = null; // Verbindung schließen
+
+// Output-Buffering beenden und Inhalt senden
+ob_end_flush();
 ?>
