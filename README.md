@@ -11,6 +11,8 @@ Ergänzend zur bereits vorhanden Webseite des Kunden soll für ein Gewinnspiel e
 Puzzle Rechere und Inspiration: https://codepen.io/JdelCastillo/pen/vYLQWbx
 Tatsächlliche Umsetzung beruht auf Eigenleistung
 
+Wir haben uns gegen die Verwendung von 25 Puzzleteilen entschieden, weil User Tests gezeigt haben das niemand unter dem Zeitlimit von 1 Minute das Puzzle lösen konnte und bei der mobilen Ansicht würde die Ansicht zu kleinteilig werden. Unsere Entscheidung beruht auf Nutzeranforderngen und Tests
+
 ---------
 Entwicklungsumgebung: 
 Firefox 126.0.1 (64-Bit)
