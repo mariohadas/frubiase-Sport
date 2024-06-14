@@ -1,4 +1,9 @@
-#Projektarbeit 
+Projektarbeit 
+-
+
+Albrecht Dürer Berufskolleg
+
+Die Microsite steht ausschließlich thematisch in Verbindung mit dem Produkt und Anbieter und bietet keine reelle Darstellung eines Gewinnspiels oder der Chance in Verbindung der Markte zu agieren. 
 
 Ergänzend zur bereits vorhanden Webseite des Kunden soll für ein Gewinnspiel eine Microsite erstellt werden. 
 
