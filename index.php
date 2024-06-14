@@ -785,6 +785,8 @@ try {
     document.getElementById('allow-drop').addEventListener('click', function() {
         document.getElementById('allow-drop').style.display = 'none';
         document.getElementById('drop-container').style.display = 'grid';
+        document.getElementById('drop-container').style.justifyitems = 'stretch';
+        document.getElementById('drop-container').style.width = '100%';
         startTimer(); // Start the timer when drag and drop containers are displayed
     });
 
