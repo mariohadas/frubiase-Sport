@@ -15,7 +15,7 @@ Wir haben uns gegen die Verwendung von 25 Puzzleteilen entschieden, weil User Te
 
 ---------
 Entwicklungsumgebung: 
-Firefox 126.0.1 (64-Bit)
+Firefox 126.0.1 (64-Bit) / Google Chrome
 
 Figma Browserversion
 
