@@ -24,6 +24,7 @@ FileZilla 3.67.0
 
 
 mitverwendete Plugins 
+
 Name: Auto Close Tag
 ID: formulahendry.auto-close-tag
 Beschreibung: Automatically add HTML/XML close tag, same as Visual Studio IDE or Sublime Text
