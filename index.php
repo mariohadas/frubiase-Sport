@@ -14,10 +14,32 @@ try {
 
     // Fetch all rows into an associative array
     $players = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
+} catch (PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+}
+
+try {
+    $sql = "
+    SELECT COUNT(*) as total_players
+    FROM (
+        SELECT DISTINCT p.vorname, p.nachname, p.geburtsdatum, k.email
+        FROM Person p
+        JOIN Kontakt k ON p.kontaktID = k.kontaktID
+        WHERE p.puzzleZeit IS NOT NULL
+    ) AS unique_entries
+    ";
+
+    // Execute query and fetch result
+    $stmt = $conn->query($sql);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $total_players = $result['total_players'];
+
+} catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -49,7 +71,7 @@ try {
                 </ul>
             </div>
             <div class="nav-logo">
-                <a href="./index.php">
+                <a href="https://www.frubiase.de/">
                     <img src="./images/logo.svg" alt="Logo">
                 </a>
             </div>
@@ -117,7 +139,7 @@ try {
                             Schlage die Bestzeit und gewinne tolle Preise</p>
                         <p class="title">Jeder Teilnehmer hat 1 Versuch</p>
                         <h3 class="title">Spiel Starten</h3>
-                        <!-- <p class="info">Siehe die Puzzle an die richtige Stelle. Sobald du ein
+                        <!-- <p class="info">Ziehe die Puzzle an die richtige Stelle. Sobald du ein
                             Puzzle Stück auf diese Fläsche ziehst beginnt die Zeit.</p> -->
                     </div>
                     <!-- <div class="icon-photo">
@@ -346,7 +368,8 @@ try {
                     </div>
                     <input type="hidden" id="elapsed_time" name="elapsed_time" value="">
                     <div class="button-container">
-                        <button type="submit" name="submit" class="participateButton" id="participate" disabled>Teilnehmen</button>
+                        <button type="submit" name="submit" class="participateButton" id="participate"
+                            disabled>Teilnehmen</button>
 
                     </div>
 
@@ -366,21 +389,25 @@ try {
     <!-- Experts Player Start -->
     <div id="leaderboard" class="expert-player">
         <div class="myContainer">
+            
             <div class="player-container">
                 <!-- Player Item -->
                 <?php foreach ($players as $i => $player): ?>
                 <div class="player-item">
                     <div class="details">
-                        <div class="number"><?php echo $i + 1; ?></div>
+                        <div class="number">
+                            <?php echo $i + 1; ?>
+                        </div>
+                        <div class="playTime">
+                            <?php echo htmlspecialchars($player['puzzleZeit']); ?>
+                        </div>
                         <div class="name">
                             <?php echo htmlspecialchars($player['vorname']); ?><br>
                             <?php echo htmlspecialchars($player['nachname']); ?>
                         </div>
-                        <div class="playTime"><?php echo $player['puzzleZeit']; ?></div>
                     </div>
                 </div>
                 <?php endforeach; ?>
-                
 
 
                 <div class="border1">
@@ -411,6 +438,13 @@ try {
 
                 </div>
             </div>
+            
+        </div>
+    </div>
+    <div class="totalPlayers">
+        <div class="leader-count myContainer">
+            <div class="lName">Gesamte Teilnehmer</div>
+            <div class="count"><?php echo htmlspecialchars($total_players); ?></div>
         </div>
     </div>
     <!-- Experts Player End -->
@@ -565,225 +599,216 @@ try {
     <!-- JavaScript -->
     <script src="./js/script.js"></script>
     <script>
-        // Initialize the form
-        function initializeForm() {
-            const checkboxes = document.querySelectorAll('.check-box input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false; // Uncheck all checkboxes
-                checkbox.disabled = true; // Disable all checkboxes
-            });
-            const participateButton = document.querySelector('.participateButton');
-            participateButton.disabled = true; // Disable the participate button
-        }
+    // Initialize the form
+    function initializeForm() {
+        const checkboxes = document.querySelectorAll('.check-box input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false; // Uncheck all checkboxes
+            checkbox.disabled = true; // Disable all checkboxes
+        });
+        const participateButton = document.querySelector('.participateButton');
+        participateButton.disabled = true; // Disable the participate button
+    }
 
-        // Check if the form is filled out
-        function isFormFilled() {
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('emailAddress').value.trim();
-            const phone = document.getElementById('phoneNumber').value.trim();
-            return name !== '' && email !== '' && phone !== '';
-        }
+    // Check if the form is filled out
+    function isFormFilled() {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('emailAddress').value.trim();
+        const phone = document.getElementById('phoneNumber').value.trim();
+        return name !== '' && email !== '' && phone !== '';
+    }
 
-        // Function to enable/disable checkboxes and participate button
-        function toggleCheckboxesAndButton(enable) {
-            const checkboxes = document.querySelectorAll('.check-box input[type="checkbox"]');
-            // const participateButton = document.querySelector('.participateButton');
-            checkboxes.forEach(checkbox => checkbox.disabled = !enable);
-            // participateButton.disabled = !enable;
-        }
+    // Function to enable/disable checkboxes and participate button
+    function toggleCheckboxesAndButton(enable) {
+        const checkboxes = document.querySelectorAll('.check-box input[type="checkbox"]');
+        // const participateButton = document.querySelector('.participateButton');
+        checkboxes.forEach(checkbox => checkbox.disabled = !enable);
+        // participateButton.disabled = !enable;
+    }
 
-        // Validate the form and display required messages
-        function validateFormAndShowMessages() {
-            const form = document.getElementById('puzzleForm');
-            const requiredFields = form.querySelectorAll('.input-fill');
-            const errorMessage = form.querySelectorAll('.req-msg');
-            let hasError = false;
+    // Validate the form and display required messages
+    function validateFormAndShowMessages() {
+        const form = document.getElementById('puzzleForm');
+        const requiredFields = form.querySelectorAll('.input-fill');
+        const errorMessage = form.querySelectorAll('.req-msg');
+        let hasError = false;
 
-            // Iterate through each required field
-            requiredFields.forEach(function (field, index) {
-                const input = field.querySelector('input, select');
-                const msg = errorMessage[index];
+        // Iterate through each required field
+        requiredFields.forEach(function(field, index) {
+            const input = field.querySelector('input, select');
+            const msg = errorMessage[index];
 
-                if (!input.value.trim()) {
+            if (!input.value.trim()) {
+                msg.style.display = 'block'; // Display error message
+                hasError = true;
+            } else {
+                msg.style.display = 'none'; // Hide error message if field is filled
+            }
+
+            // Additional check for ageDate field
+            if (input.id === 'ageDate') {
+                const today = new Date();
+                const enteredDate = new Date(input.value);
+                const age = today.getFullYear() - enteredDate.getFullYear();
+                const monthDiff = today.getMonth() - enteredDate.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < enteredDate.getDate())) {
+                    age--; // Adjust age if birthday hasn't occurred yet this year
+                }
+
+                if (age < 18) {
+                    msg.innerText = 'Du darfst erst ab 18 Jahren teilnehmen'; // Update error message
                     msg.style.display = 'block'; // Display error message
                     hasError = true;
-                } else {
-                    msg.style.display = 'none'; // Hide error message if field is filled
                 }
-
-                // Additional check for ageDate field
-                if (input.id === 'ageDate') {
-                    const today = new Date();
-                    const enteredDate = new Date(input.value);
-                    const age = today.getFullYear() - enteredDate.getFullYear();
-                    const monthDiff = today.getMonth() - enteredDate.getMonth();
-                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < enteredDate.getDate())) {
-                        age--; // Adjust age if birthday hasn't occurred yet this year
-                    }
-
-                    if (age < 18) {
-                        msg.innerText = 'Du darfst erst ab 18 Jahren teilnehmen'; // Update error message
-                        msg.style.display = 'block'; // Display error message
-                        hasError = true;
-                    }
-                }
-            });
-
-            return !hasError;
-        }
-
-
-        // Function to save form data and redirect to details.html
-        function saveFormDataAndRedirect() {
-            // Save the current timer value
-            const timerValue = document.querySelector('.timer').innerText;
-
-            // Save form data
-            const formData = {
-                name: document.getElementById('name').value.trim(),
-                size: document.getElementById('sizeName').value.trim(),
-                time: timerValue
-            };
-
-            // Convert the form data object to a query string
-            const params = new URLSearchParams(formData).toString();
-
-            // Redirect to details.html with the form data as query parameters
-            window.location.href = `details.php?${params}`;
-        }
-
-        // Timer variables
-        let startTime;
-        let timerInterval;
-        let dragDropCompleted = false;
-
-        // Function to start the timer
-        function startTimer() {
-            startTime = new Date().getTime(); // Get the current time
-            timerInterval = setInterval(updateTimer, 1000); // Update timer every second
-        }
-
-        // Function to update the timer
-        function updateTimer() {
-            const currentTime = new Date().getTime(); // Get the current time
-            const elapsedTime = currentTime - startTime; // Calculate elapsed time
-
-            // Calculate hours, minutes, and seconds
-            const hours = String(Math.floor(elapsedTime / (1000 * 60 * 60))).padStart(2, '0');
-            const minutes = String(Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-            const seconds = String(Math.floor((elapsedTime % (1000 * 60)) / 1000)).padStart(2, '0');
-
-            // Display the timer with hours, minutes, and seconds
-            const timerElement = document.querySelector('.timer');
-            timerElement.innerText = `${hours}:${minutes}:${seconds}`;
-            document.getElementById('elapsed_time').value = `${hours}:${minutes}:${seconds}`;
-
-            // Enable checkboxes and participate button if 60 seconds have passed
-            if (elapsedTime >= 60000 && !dragDropCompleted) {
-                toggleCheckboxesAndButton(false);
             }
+        });
 
-            // Change timer's background and text color based on elapsed time
-            if (elapsedTime < 60000) {
-                timerElement.classList.remove('red'); // Remove red class if present
-                timerElement.classList.add('green'); // Add green class
+        return !hasError;
+    }
+
+
+    // Function to save form data and redirect to details.html
+    function saveFormDataAndRedirect() {
+        // Save the current timer value
+        const timerValue = document.querySelector('.timer').innerText;
+
+        // Save form data
+        const formData = {
+            name: document.getElementById('name').value.trim(),
+            size: document.getElementById('sizeName').value.trim(),
+            time: timerValue
+        };
+
+        // Convert the form data object to a query string
+        const params = new URLSearchParams(formData).toString();
+
+        // Redirect to details.html with the form data as query parameters
+        window.location.href = `details.php?${params}`;
+    }
+
+    // Timer variables
+    let startTime;
+    let timerInterval;
+    let dragDropCompleted = false;
+
+    // Function to start the timer
+    function startTimer() {
+        startTime = new Date().getTime(); // Get the current time
+        timerInterval = setInterval(updateTimer, 1000); // Update timer every second
+    }
+
+    // Function to update the timer
+    function updateTimer() {
+        const currentTime = new Date().getTime(); // Get the current time
+        const elapsedTime = currentTime - startTime; // Calculate elapsed time
+
+        // Calculate hours, minutes, and seconds
+        const hours = String(Math.floor(elapsedTime / (1000 * 60 * 60))).padStart(2, '0');
+        const minutes = String(Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+        const seconds = String(Math.floor((elapsedTime % (1000 * 60)) / 1000)).padStart(2, '0');
+
+        // Display the timer with hours, minutes, and seconds
+        const timerElement = document.querySelector('.timer');
+        timerElement.innerText = `${hours}:${minutes}:${seconds}`;
+        document.getElementById('elapsed_time').value = `${hours}:${minutes}:${seconds}`;
+
+        // Enable checkboxes and participate button if 60 seconds have passed
+        if (elapsedTime >= 60000 && !dragDropCompleted) {
+            toggleCheckboxesAndButton(false);
+        }
+
+        // Change timer's background and text color based on elapsed time
+        if (elapsedTime < 60000) {
+            timerElement.classList.remove('red'); // Remove red class if present
+            timerElement.classList.add('green'); // Add green class
+        } else {
+            timerElement.classList.remove('green'); // Remove green class if present
+            timerElement.classList.add('red'); // Add red class
+        }
+    }
+
+
+
+    // Function to stop the timer
+    function stopTimer() {
+        clearInterval(timerInterval); // Stop the timer interval
+    }
+
+    // Puzzle Game Drag and Drop Function
+    function enableDragDrop() {
+        const dragItems = document.querySelectorAll('.draggable');
+        dragItems.forEach(item => {
+            item.draggable = true;
+            item.addEventListener('dragstart', drag);
+        });
+        const dropItems = document.querySelectorAll('.drop-item');
+        dropItems.forEach(item => {
+            item.ondrop = drop;
+            item.ondragover = allowDrop;
+        });
+    }
+
+    // Functions for drag and drop functionality
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text/plain", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text/plain");
+        ev.target.appendChild(document.getElementById(data));
+
+        // Check for completion and stop the timer
+        if (allItemsPlaced()) {
+            dragDropCompleted = true;
+            stopTimer(); // Stop the timer when all drag and drop items are placed
+            toggleCheckboxesAndButton(true); // Enable checkboxes and participate button
+            finishTime();
+        }
+    }
+
+
+
+
+
+    // Function to check if all drag and drop items are placed
+    function allItemsPlaced() {
+        const dropItems = document.querySelectorAll('.drop-item');
+        return Array.from(dropItems).every(item => item.children.length > 0);
+    }
+
+    // Event listener for the start DragDrop
+    document.getElementById('allow-drop').addEventListener('click', function() {
+        document.getElementById('allow-drop').style.display = 'none';
+        document.getElementById('drop-container').style.display = 'grid';
+        startTimer(); // Start the timer when drag and drop containers are displayed
+    });
+
+    // Event listener for checkboxes
+    document.querySelectorAll('.check-box input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (areAllCheckboxesChecked()) {
+                document.querySelector('.participateButton').disabled =
+                    false; // Enable participate button if all checkboxes are checked
             } else {
-                timerElement.classList.remove('green'); // Remove green class if present
-                timerElement.classList.add('red'); // Add red class
-            }
-        }
-
-
-
-        // Function to stop the timer
-        function stopTimer() {
-            clearInterval(timerInterval); // Stop the timer interval
-        }
-
-        // Puzzle Game Drag and Drop Function
-        function enableDragDrop() {
-            const dragItems = document.querySelectorAll('.draggable');
-            dragItems.forEach(item => {
-                item.draggable = true;
-                item.addEventListener('dragstart', drag);
-            });
-            const dropItems = document.querySelectorAll('.drop-item');
-            dropItems.forEach(item => {
-                item.ondrop = drop;
-                item.ondragover = allowDrop;
-            });
-        }
-
-        // Functions for drag and drop functionality
-        function allowDrop(ev) {
-            ev.preventDefault();
-        }
-
-        function drag(ev) {
-            ev.dataTransfer.setData("text/plain", ev.target.id);
-        }
-
-        function drop(ev) {
-            ev.preventDefault();
-            var data = ev.dataTransfer.getData("text/plain");
-            ev.target.appendChild(document.getElementById(data));
-
-            // Check for completion and stop the timer
-            if (allItemsPlaced()) {
-                dragDropCompleted = true;
-                stopTimer(); // Stop the timer when all drag and drop items are placed
-                toggleCheckboxesAndButton(true); // Enable checkboxes and participate button
-                finishTime();
-            }
-        }
-
-        
-
-
-
-        // Function to check if all drag and drop items are placed
-        function allItemsPlaced() {
-            const dropItems = document.querySelectorAll('.drop-item');
-            return Array.from(dropItems).every(item => item.children.length > 0);
-        }
-
-        // Event listener for the start DragDrop
-        document.getElementById('allow-drop').addEventListener('click', function () {
-            document.getElementById('allow-drop').style.display = 'none';
-            document.getElementById('drop-container').style.display = 'grid';
-            startTimer(); // Start the timer when drag and drop containers are displayed
-        });
-
-        // Event listener for checkboxes
-        document.querySelectorAll('.check-box input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', function () {
-                if (areAllCheckboxesChecked()) {
-                    document.querySelector('.participateButton').disabled = false; // Enable participate button if all checkboxes are checked
-                } else {
-                    document.querySelector('.participateButton').disabled = true; // Disable participate button if not all checkboxes are checked
-                }
-            });
-        });
-
-        // Check if all checkboxes are checked
-        function areAllCheckboxesChecked() {
-            const checkboxes = document.querySelectorAll('.check-box input[type="checkbox"]');
-            return Array.from(checkboxes).every(checkbox => checkbox.checked);
-        }
-
-        /*
-        // Event listener for the form submission
-        document.getElementById('participate').addEventListener('click', function (event) {
-            event.preventDefault(); // Prevent form submission
-            if (validateFormAndShowMessages()) {
-                saveFormDataAndRedirect(); // Save form data and redirect to index2.html
+                document.querySelector('.participateButton').disabled =
+                    true; // Disable participate button if not all checkboxes are checked
             }
         });
-*/
-        // Call initializeForm function when the page loads
-        window.onload = initializeForm;
+    });
 
+    // Check if all checkboxes are checked
+    function areAllCheckboxesChecked() {
+        const checkboxes = document.querySelectorAll('.check-box input[type="checkbox"]');
+        return Array.from(checkboxes).every(checkbox => checkbox.checked);
+    }
 
+    // Call initializeForm function when the page loads
+    window.onload = initializeForm;
     </script>
 </body>
 

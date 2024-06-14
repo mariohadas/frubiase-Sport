@@ -1,13 +1,11 @@
 <?php
 
-// Fehler-Reporting aktivieren
+// enable error-reports
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-
-
-// Datenbankverbindung herstellen
+// establish connection to database
 $servername = "db5015939564.hosting-data.io";
 $username = "dbu1674238"; // Benutzername der Datenbank
 $password = "B6(+dJO14PG!NS7"; // Passwort der Datenbank
@@ -15,7 +13,7 @@ $dbname = "dbs12991471"; // Name der Datenbank
 
 
 try {
-    //Daten aus dem Formular extrahieren
+    //extract Data from inputs
     $anrede = $_POST['anrede'];
     $vorname = $_POST['vorname'];
     $nachname = $_POST['nachname'];
@@ -32,40 +30,39 @@ try {
 
     $puzzleZeit = $_POST['elapsed_time'];
 
-    // Datenbankverbindung herstellen
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    // Fehlermodus auf Ausnahmen setzen
+    // Set error mode to exceptions 
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // SQL-Abfrage vorbereiten
+    // prepare SQL-injection
     $stmt_address = $conn->prepare("INSERT INTO Adresse (plz, ort, strasse, hausnummer) VALUES (:plz, :ort, :strasse, :hausnummer)");
-    // Parameter binden
+    // bind Parameter 
     $stmt_address->bindParam(':plz', $plz);
     $stmt_address->bindParam(':ort', $ort);
     $stmt_address->bindParam(':strasse', $strasse);
     $stmt_address->bindParam(':hausnummer', $hausnummer);
 
-    // SQL-Abfrage ausführen
+    // execute SQL-injections
     $stmt_address->execute();
 
-    // Die letzte eingefügte ID abrufen
+    // get latest ID 
     $adresseID = $conn->lastInsertId();
 
-    // SQL-Abfrage vorbereiten
+    // prepare SQL-injection
     $stmt_kontakt = $conn->prepare("INSERT INTO Kontakt (email, telefonnummer) VALUES (:email, :telefonnummer)");
-    // Parameter binden
+    // bind Parameter
     $stmt_kontakt->bindParam(':email', $email);
     $stmt_kontakt->bindParam(':telefonnummer', $telefonnummer);
 
-    // SQL-Abfrage ausführen
+    // execute SQL-injections
     $stmt_kontakt->execute();
 
     // Die letzte eingefügte ID abrufen
     $kontaktID = $conn->lastInsertId();   
 
-    // SQL-Abfrage vorbereiten
+    // prepare SQL-injection
     $stmt_person = $conn->prepare("INSERT INTO Person (anrede, vorname, nachname, geburtsdatum, TShirtGroesse, adresseID, kontaktID, puzzleZeit) VALUES (:anrede, :vorname, :nachname, :geburtsdatum, :TShirtGroesse, :adresseID, :kontaktID, :puzzleZeit)");
-    // Parameter binden
+    // bind Parameter
     $stmt_person->bindParam(':anrede', $anrede);
     $stmt_person->bindParam(':vorname', $vorname);
     $stmt_person->bindParam(':nachname', $nachname);
@@ -75,7 +72,7 @@ try {
     $stmt_person->bindParam(':kontaktID', $kontaktID);
     $stmt_person->bindParam(':puzzleZeit', $puzzleZeit);
 
-    // SQL-Abfrage ausführen
+    // execute SQL-injections
     $stmt_person->execute();
     
     
@@ -85,12 +82,12 @@ try {
 
 
 try {
-    // Datenbankverbindung herstellen
+    // establish connection to database
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    // Fehlermodus auf Ausnahmen setzen
+    // Set error mode to exceptions
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Daten des letzten eingefügten Benutzers abrufen
+    // Retrieve data of the last inserted user
     $stmt = $conn->prepare("SELECT vorname, nachname, puzzleZeit FROM Person ORDER BY personID DESC LIMIT 1");
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -98,19 +95,12 @@ try {
     if ($user) {
         $puzzleZeit = $user['puzzleZeit'];
 
-        // Platzierung berechnen: Anzahl der Personen mit einer besseren Zeit
+        // Calculate ranking: Number of people with a better time
         $stmt = $conn->prepare("SELECT COUNT(*) as `rank` FROM Person WHERE puzzleZeit < :puzzleZeit");
         $stmt->bindParam(':puzzleZeit', $puzzleZeit);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $rank = $result['rank'] + 1; // Da COUNT(*) die Anzahl der Personen mit besserer Zeit liefert, ist die Platzierung um 1 höher
-
-        // Hier könnten Sie den Rang weiterverwenden oder speichern
-        // Beispiel: $savedRank = $rank;
-
-        // Anzeige der Platzierung (oder Speichern in einer Variablen)
-
-
+        $rank = $result['rank'] + 1; // As COUNT(*) provides the number of people with a better time, the ranking is 1 higher
     } else {
         echo "Keine Daten gefunden.";
     }
@@ -119,7 +109,7 @@ try {
 }
 
 
-$conn = null; // Verbindung schließen
+$conn = null; // close connection
 
 
 
@@ -158,7 +148,7 @@ $conn = null; // Verbindung schließen
                 </ul>
             </div>
             <div class="nav-logo">
-                <a href="./index.php">
+                <a href="https://www.frubiase.de/">
                     <img src="./images/logo.svg" alt="Logo">
                 </a>
             </div>
